@@ -78,3 +78,92 @@ export async function fetchProducts() {
     return []; 
   }
 }
+
+export async function deleteProduct(productId) {
+  // 1. Safety Check: Ensure we aren't sending "4" or an empty string
+  if (!productId || productId.length < 36) {
+    console.error("Invalid UUID for deletion:", productId);
+    return null;
+  }
+
+  const baseUrl = getBaseUrl();
+  const headers = await getHeaders();
+
+  try {
+    const res = await fetch(`${baseUrl}/products/${productId}`, {
+      method: "DELETE",
+      headers,
+    });
+
+    // 2. Handle Success: Spring Boot usually returns 204 (No Content) for DELETE
+    if (res.status === 204 || res.ok) {
+      console.log(`Product ${productId} deleted successfully.`);
+      return { success: true };
+    }
+
+    // 3. Handle Errors
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({})); // Catch empty bodies
+      
+      if (res.status === 401) {
+        console.error("Auth Error: Check if you are logged in.");
+        return null;
+      }
+      
+      throw new Error(errorData?.message || `Error: ${res.status}`);
+    }
+
+  } catch (error) {
+    console.error("deleteProduct failed:", error.message);
+    return null; 
+  }
+}
+
+export async function createProduct(formData) {
+  const baseUrl = getBaseUrl();
+  const headers = await getHeaders();
+
+  
+  const payload = {
+    name: formData.name,
+    description: formData.description,
+    imageUrl: formData.imageUrl || "https://placeholder.com/img.png",
+    price: Number(formData.price), 
+    categoryId: "4a0cc85d-cf4c-474b-b408-1e053eac72f8", 
+    colors: Array.isArray(formData.colors) ? formData.colors : [],
+    sizes: Array.isArray(formData.sizes) ? formData.sizes : []
+  };
+
+  console.log("Sending to server:", JSON.stringify(payload, null, 2));
+
+  try {
+    const res = await fetch(`${baseUrl}/products`, {
+      method: "POST",
+      headers: {
+        ...headers,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload), 
+    });
+
+    if (!res.ok) {
+    const errorData = await res.json();
+    
+    
+    console.error("FULL SERVER ERROR:", errorData); 
+    
+   
+    const errorMessage = errorData.detail || errorData.message || JSON.stringify(errorData);
+    throw new Error(errorMessage);
+}
+
+    const result = await res.json();
+    
+  
+    return result;
+
+  } catch (error) {
+    console.error("createProduct failed:", error.message);
+    throw error; 
+  }
+}
