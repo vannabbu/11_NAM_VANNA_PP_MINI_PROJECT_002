@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@heroui/react";
 import { useForm } from "react-hook-form";
-import { registerService } from "../../../service/auth";
+import { registerService } from "@/service/auth.service.js";
 import { useRouter } from "next/navigation";
 
 export default function RegisterFormComponent() {

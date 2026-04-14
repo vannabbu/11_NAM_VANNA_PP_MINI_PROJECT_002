@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@heroui/react";
-// import { useCart } from "@/store/cartStore";
+import { useCart } from "../app/cart-context";
 
 const centerLinks = [
   { href: "/", label: "Home" },
@@ -57,10 +57,11 @@ function authLinkClass(pathname, path, filled = false) {
 export default function NavbarComponent() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-//   const { totalQuantity } = useCart();
+  const { getTotalItems } = useCart();
 
-//   const cartLabel =
-//     totalQuantity > 0 ? `Shopping cart, ${totalQuantity} items` : "Shopping cart";
+  const totalQuantity = getTotalItems();
+  const cartLabel =
+    totalQuantity > 0 ? `Shopping cart, ${totalQuantity} items` : "Shopping cart";
 
   const linkClass = (active) =>
     `relative flex items-center rounded-full px-3 py-2 text-sm font-medium transition ${
@@ -110,8 +111,8 @@ export default function NavbarComponent() {
           </div>
           <Link
             href="/cart"
-            // aria-label={cartLabel}
-            // title={cartLabel}
+            aria-label={cartLabel}
+            title={cartLabel}
             className={`relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition ${
               pathname === "/cart"
                 ? "border-lime-500 bg-lime-400 text-gray-900"
@@ -119,14 +120,14 @@ export default function NavbarComponent() {
             }`}
           >
             <CartBagIcon className="size-5" />
-            {/* <span
+            <span
               className={`absolute -right-0.5 -top-0.5 flex min-h-4.5 min-w-4.5 items-center justify-center rounded-full bg-teal-900 px-1 text-[10px] font-semibold leading-none text-lime-300 tabular-nums transition-opacity ${
                 totalQuantity > 0 ? "opacity-100" : "pointer-events-none opacity-0"
               }`}
               aria-hidden
             >
               {totalQuantity > 99 ? "99+" : totalQuantity}
-            </span> */}
+            </span>
           </Link>
 
           <Button

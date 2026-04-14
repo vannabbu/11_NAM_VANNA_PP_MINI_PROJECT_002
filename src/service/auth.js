@@ -1,38 +1,47 @@
-"use server"
-
-export async function registerService(data) {
- 
-  const fullName = data.name || ""; 
-  const email = data.email;
-  const password = data.password;
-  const birthdate = data.birthdate;
-
-
-  const nameParts = fullName.trim().split(" ");
-  const firstName = nameParts[0] || "";
-  const lastName = nameParts.slice(1).join(" ") || "User";
-
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auths/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        firstName, 
-        lastName, 
-        email, 
-        password, 
-        birthDate: birthdate
-      }),
-    });
-
-    const result = await res.json();
-
-    if (!res.ok) {
-      return { error: result.message || "Registration failed" };
-    }
-
-    return { success: true };
-  } catch (err) {
-    return { error: "Connection to server failed" };
-  }
-}
+import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import { loginService } from "../service/auth.service";
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  providers: [
+    Credentials({
+      name: "credentials",
+      credentials: {
+        email: {},
+        password: {},
+      },
+      authorize: async (credentials) => {
+        try {
+          const user = await loginService(credentials);
+          console.log("this is user in auth :", user);
+          return user;
+        } catch (error) {
+          console.error("Internal Auth Error:", error);
+          return null;
+        }
+      },
+    }),
+  ],
+  secret: process.env.NEXTAUTH_SECRET,
+  session: {
+    strategy: "jwt",
+  },
+  pages: {
+    signIn: "/login",
+  },
+  callbacks: {
+    jwt: async ({ token, user }) => {
+      if (user) {
+        token.user = user;
+      }
+      console.log("this is token :", token);
+      return token;
+    },
+    session: async ({ session, token }) => {
+      if (token && token.user) {
+        session.user = token.user;
+      }
+      console.log("this is session : ", session);
+      return session;
+    },
+  },
+});

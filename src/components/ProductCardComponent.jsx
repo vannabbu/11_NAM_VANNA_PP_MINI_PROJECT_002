@@ -45,7 +45,7 @@ export default function ProductCardComponent({ product }) {
         <p className="mt-2 text-base font-semibold tabular-nums text-gray-900">${price}</p>
       </div>
       <div className="absolute bottom-4 right-4">
-        <ButtonAddComponent productId={productId} />
+        <ButtonAddComponent product={product} />
       </div>
     </article>
   );

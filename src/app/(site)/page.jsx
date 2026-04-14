@@ -1,14 +1,26 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { categories, products } from "../../data/mockData";
 import LandingHeroSectionComponent from "../../components/landing/LandingHeroSectionComponent";
 import LandingBestSellerSectionComponent from "../../components/landing/LandingBestSellerSectionComponent";
 import LandingEssentialComponent from "../../components/landing/LandingEssentialComponent";
+import { fetchBestSellers } from "@/service/products.service.js";
+import { auth } from "../../../auth";
 
-const bestSellers = products.slice(0, 4);
+
 const heroStrip = products.slice(0, 3);
 
-export default function Home() {
+export default async function Home() {
+  
+  const session = await auth();
+  
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  const bestSellers = await fetchBestSellers();
+
   return (
     <div className="bg-[#fafafa]">
       <LandingHeroSectionComponent miniProducts={heroStrip} />

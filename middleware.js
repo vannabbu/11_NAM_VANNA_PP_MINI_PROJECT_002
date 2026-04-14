@@ -1,11 +1,10 @@
+import { auth } from "./auth";
 import { NextResponse } from 'next/server';
 
-export function  middleware(request) {
- 
-  const cookie =  request.cookies.get("auth_token"); 
-  const token = cookie?.value; 
+export async function middleware(request) {
+  const session = await auth();
 
-  if (!token) {
+  if (!session) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
@@ -13,6 +12,5 @@ export function  middleware(request) {
 }
 
 export const config = {
-
   matcher: ['/category', '/category/:path*'],
 };

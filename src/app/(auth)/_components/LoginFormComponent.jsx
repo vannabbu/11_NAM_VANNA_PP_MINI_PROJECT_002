@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { Button } from "@heroui/react";
 import { useForm } from "react-hook-form";
-import { loginService } from "../../../service/auth.service";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export default function LoginFormComponent() {
   const [submitError, setSubmitError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
 
@@ -23,25 +24,33 @@ export default function LoginFormComponent() {
   });
 
   const onSubmit = async (data) => {
-
     try {
       setSubmitError("");
+      setIsLoading(true);
 
-      const result = await loginService(data);
+      const result = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
+
       console.log("LOGIN RESULT:", result);
-      if (result) {
+      
+      if (result?.error) {
+        setSubmitError(result.error || "Login failed");
+        return;
+      }
+
+      if (result?.ok) {
         router.push("/");
       } else {
         setSubmitError("Login failed");
       }
-
-      if (!result) {
-        setSubmitError("Login failed");
-        return;
-      }
     } catch (error) {
       console.log("LOGIN ERROR:", error);
       setSubmitError(error.message || "Something went wrong");
+    } finally {
+      setIsLoading(false);
     }
   };
 
